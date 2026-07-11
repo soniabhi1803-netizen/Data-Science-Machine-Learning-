@@ -1,8 +1,36 @@
-venv/
+# Python
 __pycache__/
-*.pyc
-uploads/
-saved_models/
-logs/
+*.py[cod]
+*.pyo
+
+# Virtual Environment
+venv/
+
+# Environment variables
 .env
+
+# Uploaded audio files
+backend/uploads/
+
+# Logs
+backend/logs/
+
+# Saved models
+backend/saved_models/
+
+# Jupyter
 .ipynb_checkpoints/
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python cache
+.pytest_cache/
+
+# Build
+build/
+dist/
