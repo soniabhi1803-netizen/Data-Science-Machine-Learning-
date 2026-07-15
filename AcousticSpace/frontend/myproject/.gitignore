@@ -1,0 +1,47 @@
+# -------------------------
+# Python
+# -------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual Environment
+venv/
+.env
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Logs
+logs/
+*.log
+
+# Python cache
+.pytest_cache/
+.mypy_cache/
+
+# Uploaded Files
+backend/uploads/
+
+# Saved Models
+backend/saved_models/
+
+# -------------------------
+# Dataset
+# -------------------------
+ml/datasets/raw/
+ml/datasets/processed/
+
+# Checkpoints
+*.pth
+*.pt
+*.ckpt
+
+# OS Files
+.DS_Store
+Thumbs.db

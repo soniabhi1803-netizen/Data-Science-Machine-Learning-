@@ -1,6 +1,8 @@
 from app.utils.audio_utils import AudioUtils
 from app.utils.visualization_utils import VisualizationUtils
-import os 
+from app.services.rir_service import RIRService
+
+import os
 import librosa
 import numpy as np
 
@@ -10,6 +12,9 @@ class FeatureService:
     @staticmethod
     def preprocess_audio(file_path: str):
 
+        # -----------------------------
+        # Audio Preprocessing
+        # -----------------------------
         audio, sample_rate = AudioUtils.load_audio(file_path)
 
         audio = AudioUtils.normalize_audio(audio)
@@ -18,25 +23,66 @@ class FeatureService:
 
         metadata = AudioUtils.get_metadata(audio, sample_rate)
 
+        # -----------------------------
+        # Feature Extraction
+        # -----------------------------
         features = FeatureService.extract_features(
             audio,
             sample_rate
         )
 
+        # -----------------------------
+        # RIR Feature Extraction
+        # -----------------------------
+        rir_features = RIRService.extract(
+            audio,
+            sample_rate
+        )
+
+        # -----------------------------
+        # File & Folder Paths
+        # -----------------------------
         filename = os.path.splitext(
             os.path.basename(file_path)
         )[0]
 
-        waveform_path = f"../ml/datasets/processed/waveforms/{filename}.png"
+        BASE_DIR = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../..")
+        )
 
-        spectrogram_path = f"../ml/datasets/processed/spectrograms/{filename}.png"
+        PROCESSED_DIR = os.path.join(
+            BASE_DIR,
+            "ml",
+            "datasets",
+            "processed"
+        )
 
-        mfcc_path = f"../ml/datasets/processed/mfcc/{filename}.png"
-        
-        os.makedirs("../ml/datasets/processed/waveforms", exist_ok=True)
-        os.makedirs("../ml/datasets/processed/spectrograms", exist_ok=True)
-        os.makedirs("../ml/datasets/processed/mfcc", exist_ok=True)
-        
+        waveform_dir = os.path.join(PROCESSED_DIR, "waveforms")
+        spectrogram_dir = os.path.join(PROCESSED_DIR, "spectrograms")
+        mfcc_dir = os.path.join(PROCESSED_DIR, "mfcc")
+
+        os.makedirs(waveform_dir, exist_ok=True)
+        os.makedirs(spectrogram_dir, exist_ok=True)
+        os.makedirs(mfcc_dir, exist_ok=True)
+
+        waveform_path = os.path.join(
+            waveform_dir,
+            f"{filename}.png"
+        )
+
+        spectrogram_path = os.path.join(
+            spectrogram_dir,
+            f"{filename}.png"
+        )
+
+        mfcc_path = os.path.join(
+            mfcc_dir,
+            f"{filename}.png"
+        )
+
+        # -----------------------------
+        # Generate Visualizations
+        # -----------------------------
         VisualizationUtils.save_waveform(
             audio,
             sample_rate,
@@ -54,23 +100,25 @@ class FeatureService:
             sample_rate,
             mfcc_path
         )
-        
+
         return (
-            audio, 
-            sample_rate, 
-            metadata, 
+            audio,
+            sample_rate,
+            metadata,
             features,
+            rir_features,
             {
                 "waveform": waveform_path,
                 "mel_spectrogram": spectrogram_path,
                 "mfcc": mfcc_path
             }
-                
         )
 
-
     @staticmethod
-    def extract_features(audio, sample_rate):
+    def extract_features(
+        audio: np.ndarray,
+        sample_rate: int
+    ) -> dict:
 
         # RMS Energy
         rms = librosa.feature.rms(y=audio)
