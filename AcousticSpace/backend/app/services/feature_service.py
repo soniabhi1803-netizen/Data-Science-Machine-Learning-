@@ -108,9 +108,9 @@ class FeatureService:
             features,
             rir_features,
             {
-                "waveform": waveform_path,
-                "mel_spectrogram": spectrogram_path,
-                "mfcc": mfcc_path
+                "waveform": f"/processed/waveforms/{filename}.png",
+                "mel_spectrogram": f"/processed/spectrograms/{filename}.png",
+                "mfcc": f"/processed/mfcc/{filename}.png"
             }
         )
 
