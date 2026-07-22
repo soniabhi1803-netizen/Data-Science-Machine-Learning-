@@ -1,6 +1,6 @@
 import librosa
 import numpy as np
-
+import os
 
 class AudioUtils:
 
@@ -10,6 +10,8 @@ class AudioUtils:
         Load audio, convert to mono, and resample.
         """
 
+        print("Loading: ", file_path)
+        print("Exists: ", os.path.exists(file_path))    
         audio, sample_rate = librosa.load(
             file_path,
             sr=target_sr,

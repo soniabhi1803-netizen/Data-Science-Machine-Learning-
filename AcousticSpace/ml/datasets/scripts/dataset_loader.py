@@ -1,83 +1,82 @@
 from pathlib import Path
-from dataclasses import dataclass
-from typing import List
-
-
-@dataclass
-class AudioSample:
-    """
-    Represents one audio sample in the ASVspoof dataset.
-    """
-
-    file_id: str
-    audio_path: Path
-    label: str
-    split: str
+import pandas as pd
 
 
 class DatasetLoader:
 
-    def __init__(self, dataset_root: Path):
+    def __init__(self):
 
-        self.dataset_root = dataset_root
+        self.base_path = Path(__file__).resolve().parents[1]
 
-        self.protocol_dir = (
-            dataset_root / "ASVspoof2019_LA_cm_protocols"
+        self.dataset_path = (
+            self.base_path
+            / "raw"
+            / "ASVspoof2019_LA"
         )
 
-    def load_split(self, split: str) -> List[AudioSample]:
-        """
-        Load one dataset split.
-        """
+        self.protocol_path = (
+            self.dataset_path
+            / "ASVspoof2019_LA_cm_protocols"
+        )
 
-        protocol_map = {
-            "train": "ASVspoof2019.LA.cm.train.trn.txt",
-            "dev": "ASVspoof2019.LA.cm.dev.trl.txt",
-            "eval": "ASVspoof2019.LA.cm.eval.trl.txt"
-        }
+        self.train_audio_path = (
+            self.dataset_path
+            / "ASVspoof2019_LA_train"
+            / "flac"
+        )
 
-        if split not in protocol_map:
-            raise ValueError(
-                f"Unknown split: {split}"
-            )
+    def load_train_protocol(self):
 
         protocol_file = (
-            self.protocol_dir /
-            protocol_map[split]
+            self.protocol_path
+            / "ASVspoof2019.LA.cm.train.trn.txt"
         )
 
-        audio_dir = (
-            self.dataset_root /
-            f"ASVspoof2019_LA_{split}" /
-            "flac"
+        df = pd.read_csv(
+            protocol_file,
+            sep=r"\s+",
+            header=None
         )
 
-        samples = []
+        df.columns = [
+            "speaker_id",
+            "file_name",
+            "unused",
+            "attack",
+            "label"
+        ]
 
-        with open(protocol_file, "r") as file:
+        return df
+    
+    def prepare_train_dataset(self):
 
-            for line in file:
+        df = self.load_train_protocol()
 
-                parts = line.strip().split()
+        df["audio_path"] = df["file_name"].apply(
+            lambda x: str(
+                self.train_audio_path / f"{x}.flac"
+            )
+        )
 
-                file_id = parts[1]
+        df["label"] = df["label"].map({
+            "bonafide": 0,
+            "spoof": 1
+        })
 
-                label = parts[-1]
+        return df
+    
+if __name__ == "__main__":
 
-                audio_path = (
-                    audio_dir /
-                    f"{file_id}.flac"
-                )
+    loader = DatasetLoader()
 
-                samples.append(
+    df = loader.prepare_train_dataset()
 
-                    AudioSample(
-                        file_id=file_id,
-                        audio_path=audio_path,
-                        label=label,
-                        split=split
-                    )
+    print(df.head())
 
-                )
+    print()
 
-        return samples
+    print(df.iloc[0]["audio_path"])
+
+    print()
+
+    print(df["label"].value_counts())
